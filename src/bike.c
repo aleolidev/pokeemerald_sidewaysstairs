@@ -232,6 +232,16 @@ static void MachBikeTransition_TrySpeedUp(u8 direction)
                     PlayerOnBikeCollide(direction);
             }
         }
+        else if (collision == 16)
+        {
+            PlayerSidewaysStairsToRight(direction);
+            return;
+        } 
+        else if (collision == 17)
+        {
+            PlayerSidewaysStairsToLeft(direction);
+            return;
+        } 
         else
         {
             // we did not hit anything that can slow us down, so perform the advancement callback depending on the bikeFrameCounter and try to increase the mach bike's speed.
@@ -267,6 +277,16 @@ static void MachBikeTransition_TrySlowDown(u8 direction)
                 PlayerOnBikeCollide(direction);
         }
     }
+    else if (collision == 16)
+    {
+        PlayerSidewaysStairsToRight(direction);
+        return;
+    } 
+    else if (collision == 17)
+    {
+        PlayerSidewaysStairsToLeft(direction);
+        return;
+    } 
     else
     {
         sMachBikeSpeedCallbacks[gPlayerAvatar.bikeFrameCounter](direction);

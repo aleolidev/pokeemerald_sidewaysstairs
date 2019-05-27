@@ -73,6 +73,8 @@ static u8 sub_808B028(u8);
 static u8 sub_808B164(struct EventObject *, s16, s16, u8, u8);
 static bool8 sub_808B1BC(s16, s16, u8);
 static bool8 ShouldJumpLedge(s16, s16, u8);
+static bool8 IsSidewaysStairToRight(s16, s16, u8);
+static bool8 IsSidewaysStairToLeft(s16, s16, u8);
 static u8 sub_808B238(s16, s16, u8);
 static void check_acro_bike_metatile(s16, s16, u8, u8 *);
 
@@ -624,6 +626,26 @@ static void PlayerNotOnBikeMoving(u8 direction, u16 heldKeys)
             PlayerNotOnBikeCollideWithFarawayIslandMew(direction);
             return;
         }
+        else if (r0 == 14)
+        {
+            PlayerSidewaysStairsToRight(direction);
+            return;
+        } 
+        else if (r0 == 15)
+        {
+            PlayerSidewaysStairsToLeft(direction);
+            return;
+        } 
+        else if (r0 == 16)
+        {
+            PlayerSidewaysStairsToRightRunning(direction);
+            return;
+        } 
+        else if (r0 == 17)
+        {
+            PlayerSidewaysStairsToLeftRunning(direction);
+            return;
+        }
         else
         {
             u8 r4 = r0 - 5;
@@ -703,7 +725,21 @@ u8 CheckForEventObjectCollision(struct EventObject *a, s16 x, s16 y, u8 directio
             return 8;
         check_acro_bike_metatile(x, y, e, &collision);
     }
-    return collision;
+    if (IsSidewaysStairToRight(x, y, direction)){
+        if (gMain.heldKeys & B_BUTTON){
+                return 16;
+            } else {
+                return 14;
+            }
+        }
+    if (IsSidewaysStairToLeft(x, y, direction)){
+            if (gMain.heldKeys & B_BUTTON){
+                return 17;
+            } else {
+                return 15;
+            }
+        }
+    return collision;  
 }
 
 static u8 sub_808B164(struct EventObject *a, s16 x, s16 y, u8 direction, u8 e)
@@ -737,6 +773,22 @@ static bool8 sub_808B1BC(s16 x, s16 y, u8 direction)
 static bool8 ShouldJumpLedge(s16 x, s16 y, u8 z)
 {
     if (GetLedgeJumpDirection(x, y, z) != 0)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+static bool8 IsSidewaysStairToRight(s16 x, s16 y, u8 z)
+{
+    if (GetSidewaysStairsToRightDirection(x, y, z) != 0)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+static bool8 IsSidewaysStairToLeft(s16 x, s16 y, u8 z)
+{
+    if (GetSidewaysStairsToLeftDirection(x, y, z) != 0)
         return TRUE;
     else
         return FALSE;
@@ -1029,6 +1081,26 @@ void PlayerJumpLedge(u8 direction)
 {
     PlaySE(SE_DANSA);
     PlayerSetAnimId(GetJump2MovementAction(direction), 8);
+}
+
+void PlayerSidewaysStairsToRight(u8 direction)
+{
+    PlayerSetAnimId(GetDiagonalRightStairsMovement(direction), 8);
+}
+
+void PlayerSidewaysStairsToLeft(u8 direction)
+{
+    PlayerSetAnimId(GetDiagonalLeftStairsMovement(direction), 8);
+}
+
+void PlayerSidewaysStairsToRightRunning(u8 direction)
+{
+    PlayerSetAnimId(GetDiagonalRightStairsRunningMovement(direction), 8);
+}
+
+void PlayerSidewaysStairsToLeftRunning(u8 direction)
+{
+    PlayerSetAnimId(GetDiagonalLeftStairsRunningMovement(direction), 8);
 }
 
 void sub_808B864(void)

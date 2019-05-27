@@ -835,6 +835,22 @@ const u8 gRunningDirectionAnimNums[] = {
     [DIR_NORTHEAST] = 21,
 };
 
+const u8 gStairsDirectionAnimNums[] = {
+    [DIR_NONE] = 4,
+    [DIR_SOUTH] = 4,
+    [DIR_NORTH] = 5,
+    [DIR_WEST] = 6,
+    [DIR_EAST] = 7,
+    [DIR_SOUTHWEST] = 6,
+    [DIR_SOUTHEAST] = 7,
+    [DIR_NORTHWEST] = 6,
+    [DIR_NORTHEAST] = 7,
+    [DIR_SOUTH1WEST2] = 6,
+    [DIR_SOUTH1EAST2] = 7,
+    [DIR_NORTH1WEST2] = 6,
+    [DIR_NORTH1EAST2] = 7,
+};
+
 const u8 gTrainerFacingDirectionMovementTypes[] = {
     [DIR_NONE] = MOVEMENT_TYPE_FACE_DOWN,
     [DIR_SOUTH] = MOVEMENT_TYPE_FACE_DOWN,
@@ -870,7 +886,11 @@ static const struct Coords16 sDirectionToVectors[] = {
     {-1,  1},
     { 1,  1},
     {-1, -1},
-    { 1, -1}
+    { 1, -1},
+    {-2,  1},
+    { 2,  1},
+    {-2, -1},
+    { 2, -1}
 };
 
 const u8 gFaceDirectionMovementActions[] = {
@@ -935,6 +955,34 @@ const u8 gJump2MovementActions[] = {
     MOVEMENT_ACTION_JUMP_2_UP,
     MOVEMENT_ACTION_JUMP_2_LEFT,
     MOVEMENT_ACTION_JUMP_2_RIGHT,
+};
+const u8 gDiagonalStairRightMovementActions[] = {
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_UP,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_DOWN_LEFT,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_UP_RIGHT,
+};
+const u8 gDiagonalStairLeftMovementActions[] = {
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_UP,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_UP_LEFT,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_DOWN_RIGHT,
+};
+const u8 gDiagonalStairRightRunningMovementActions[] = {
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_UP,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_DOWN_LEFT_RUNNING,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_UP_RIGHT_RUNNING,
+};
+const u8 gDiagonalStairLeftRunningMovementActions[] = {
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_DOWN,
+    MOVEMENT_ACTION_JUMP_2_UP,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_UP_LEFT_RUNNING,
+    MOVEMENT_ACTION_WALK_STAIRS_DIAGONAL_DOWN_RIGHT_RUNNING,
 };
 const u8 gJumpInPlaceMovementActions[] = {
     MOVEMENT_ACTION_JUMP_IN_PLACE_DOWN,
@@ -4766,6 +4814,11 @@ u8 GetRunningDirectionAnimNum(u8 direction)
     return gRunningDirectionAnimNums[direction];
 }
 
+u8 GetSidewaysStairsDirectionAnimNum(u8 direction)
+{
+    return gStairsDirectionAnimNums[direction];
+}
+
 static const struct UnkStruct_085094AC *sub_8092A4C(const union AnimCmd *const *anims)
 {
     const struct UnkStruct_085094AC *retval;
@@ -5190,6 +5243,10 @@ dirn_to_anim(GetWalkFastestMovementAction, gWalkFastestMovementActions);
 dirn_to_anim(GetSlideMovementAction, gSlideMovementActions);
 dirn_to_anim(GetPlayerRunMovementAction, gPlayerRunMovementActions);
 dirn_to_anim(GetJump2MovementAction, gJump2MovementActions);
+dirn_to_anim(GetDiagonalRightStairsMovement, gDiagonalStairRightMovementActions);
+dirn_to_anim(GetDiagonalLeftStairsMovement, gDiagonalStairLeftMovementActions);
+dirn_to_anim(GetDiagonalRightStairsRunningMovement, gDiagonalStairRightRunningMovementActions);
+dirn_to_anim(GetDiagonalLeftStairsRunningMovement, gDiagonalStairLeftRunningMovementActions);
 dirn_to_anim(GetJumpInPlaceMovementAction, gJumpInPlaceMovementActions);
 dirn_to_anim(GetJumpInPlaceTurnAroundMovementAction, gJumpInPlaceTurnAroundMovementActions);
 dirn_to_anim(GetJumpMovementAction, gJumpMovementActions);
@@ -5375,6 +5432,12 @@ void sub_8093B60(struct EventObject *eventObject, struct Sprite *sprite, u8 dire
     npc_apply_anim_looping(eventObject, sprite, GetMoveDirectionAnimNum(eventObject->facingDirection));
 }
 
+void setSidewaysStairsLookingDirection(struct EventObject *eventObject, struct Sprite *sprite, u8 direction)
+{
+    sub_8093AF0(eventObject, sprite, direction);
+    npc_apply_anim_looping(eventObject, sprite, GetSidewaysStairsDirectionAnimNum(eventObject->facingDirection));
+}
+
 bool8 an_walk_any_2(struct EventObject *eventObject, struct Sprite *sprite)
 {
     if (sub_80976EC(sprite))
@@ -5442,6 +5505,70 @@ bool8 MovementAction_WalkSlowDiagonalDownRight_Step0(struct EventObject *eventOb
 }
 
 bool8 MovementAction_WalkSlowDiagonalDownRight_Step1(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    if (an_walk_any_2(eventObject, sprite))
+    {
+        sprite->data[2] = 2;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool8 MovementAction_WalkStairDiagonalUpLeft_Step0(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    setSidewaysStairsLookingDirection(eventObject, sprite, DIR_NORTH1WEST2);
+    return MovementAction_WalkStairDiagonalUpLeft_Step1(eventObject, sprite);
+}
+
+bool8 MovementAction_WalkStairDiagonalUpLeft_Step1(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    if (an_walk_any_2(eventObject, sprite))
+    {
+        sprite->data[2] = 2;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool8 MovementAction_WalkStairDiagonalUpRight_Step0(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    setSidewaysStairsLookingDirection(eventObject, sprite, DIR_NORTH1EAST2);
+    return MovementAction_WalkStairDiagonalUpRight_Step1(eventObject, sprite);
+}
+
+bool8 MovementAction_WalkStairDiagonalUpRight_Step1(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    if (an_walk_any_2(eventObject, sprite))
+    {
+        sprite->data[2] = 2;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool8 MovementAction_WalkStairDiagonalDownLeft_Step0(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    setSidewaysStairsLookingDirection(eventObject, sprite, DIR_SOUTH1WEST2);
+    return MovementAction_WalkStairDiagonalDownLeft_Step1(eventObject, sprite);
+}
+
+bool8 MovementAction_WalkStairDiagonalDownLeft_Step1(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    if (an_walk_any_2(eventObject, sprite))
+    {
+        sprite->data[2] = 2;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool8 MovementAction_WalkStairDiagonalDownRight_Step0(struct EventObject *eventObject, struct Sprite *sprite)
+{
+    setSidewaysStairsLookingDirection(eventObject, sprite, DIR_SOUTH1EAST2);
+    return MovementAction_WalkStairDiagonalDownRight_Step1(eventObject, sprite);
+}
+
+bool8 MovementAction_WalkStairDiagonalDownRight_Step1(struct EventObject *eventObject, struct Sprite *sprite)
 {
     if (an_walk_any_2(eventObject, sprite))
     {
@@ -7909,6 +8036,58 @@ u8 GetLedgeJumpDirection(s16 x, s16 y, u8 z)
     b = MapGridGetMetatileBehaviorAt(x, y);
 
     if (unknown_08376040[index](b) == 1)
+        return index + 1;
+
+    return 0;
+}
+
+u8 GetSidewaysStairsToRightDirection(s16 x, s16 y, u8 z)
+{
+    static bool8 (*const direction[])(u8) = {
+        MetatileBehavior_IsWalkSouth,
+        MetatileBehavior_IsWalkNorth,
+        MetatileBehavior_IsSidewaysStairsRight,
+        MetatileBehavior_IsSidewaysStairsRight,
+    };
+
+    u8 b;
+    u8 index = z;
+
+    if (index == 0)
+        return 0;
+    else if (index > 4)
+        index -= 4;
+
+    index--;
+    b = MapGridGetMetatileBehaviorAt(x, y);
+
+    if (direction[index](b) == 1)
+        return index + 1;
+
+    return 0;
+}
+
+u8 GetSidewaysStairsToLeftDirection(s16 x, s16 y, u8 z)
+{
+    static bool8 (*const direction[])(u8) = {
+        MetatileBehavior_IsWalkSouth,
+        MetatileBehavior_IsWalkNorth,
+        MetatileBehavior_IsSidewaysStairsLeft,
+        MetatileBehavior_IsSidewaysStairsLeft,
+    };
+
+    u8 b;
+    u8 index = z;
+
+    if (index == 0)
+        return 0;
+    else if (index > 4)
+        index -= 4;
+
+    index--;
+    b = MapGridGetMetatileBehaviorAt(x, y);
+
+    if (direction[index](b) == 1)
         return index + 1;
 
     return 0;

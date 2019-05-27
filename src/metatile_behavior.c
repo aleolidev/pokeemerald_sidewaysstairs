@@ -83,8 +83,8 @@ static const u8 sTileBitAttributes[] =
     [MB_SLIDE_NORTH] = TILE_ATTRIBUTES(TRUE, FALSE, FALSE),
     [MB_SLIDE_SOUTH] = TILE_ATTRIBUTES(TRUE, FALSE, FALSE),
     [MB_TRICK_HOUSE_PUZZLE_8_FLOOR] = TILE_ATTRIBUTES(TRUE, FALSE, FALSE),
-    [MB_UNUSED_49] = TILE_ATTRIBUTES(TRUE, FALSE, FALSE),
-    [MB_UNUSED_4A] = TILE_ATTRIBUTES(TRUE, FALSE, FALSE),
+    [MB_UNUSED_49] = TILE_ATTRIBUTES(FALSE, FALSE, FALSE),
+    [MB_UNUSED_4A] = TILE_ATTRIBUTES(FALSE, FALSE, FALSE),
     [MB_UNUSED_4B] = TILE_ATTRIBUTES(FALSE, FALSE, FALSE),
     [MB_UNUSED_4C] = TILE_ATTRIBUTES(FALSE, FALSE, FALSE),
     [MB_UNUSED_4D] = TILE_ATTRIBUTES(FALSE, FALSE, FALSE),
@@ -292,6 +292,22 @@ bool8 MetatileBehavior_IsJumpNorth(u8 metatileBehavior)
 bool8 MetatileBehavior_IsJumpSouth(u8 metatileBehavior)
 {
     if (metatileBehavior == MB_JUMP_SOUTH)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+bool8 MetatileBehavior_IsSidewaysStairsRight(u8 metatileBehavior)
+{
+    if (metatileBehavior == MB_UNUSED_49)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+bool8 MetatileBehavior_IsSidewaysStairsLeft(u8 metatileBehavior)
+{
+    if (metatileBehavior == MB_UNUSED_4A)
         return TRUE;
     else
         return FALSE;
